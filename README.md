@@ -53,8 +53,6 @@ Install dependencies (see above).
 Set your OpenAI API key in the script.
 Run the Streamlit app:streamlit run knowledge_assistant.py
 
-
-Open the provided URL (e.g., http://localhost:8501) in a browser.
 Enter queries like:
 "What products does TechCorp offer?" (RAG)
 "Calculate 2 + 2" (Calculator)

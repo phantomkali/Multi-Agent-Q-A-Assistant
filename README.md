@@ -1,69 +1,65 @@
-# Multi-Agent-Q-A-Assistant
-Knowledge Assistant
+ 
+TechCorp Knowledge Assistant
 Overview
-The Knowledge Assistant is a Retrieval-Augmented Generation (RAG)-powered multi-agent Q&A system that answers user queries by leveraging a document collection, mathematical calculations, or word definitions. It uses a modular architecture with a retrieval pipeline, an LLM for answer generation, and an agentic workflow to route queries to appropriate tools, all accessible via a Streamlit web UI.
+The TechCorp Knowledge Assistant is a Retrieval-Augmented Generation (RAG)-powered Q&A system that answers queries using a document collection, mathematical calculations, or word definitions. It features a modular design with vector-based retrieval, a free Hugging Face model for answer generation (with a rule-based fallback), and a custom agent to route queries to appropriate tools, all accessible via a Streamlit web UI.
 Architecture
-
-Data Ingestion: Reads and chunks Q&A pairs from text files in the docs directory, splitting by double newlines.
-Vector Store & Retrieval: Uses sentence-transformers (all-MiniLM-L6-v2) to embed document chunks and FAISS for efficient vector indexing. Retrieves top 3 relevant chunks for each query.
-LLM Integration: Employs OpenAI’s gpt-3.5-turbo-instruct for generating natural-language answers based on retrieved context.
-Agentic Workflow: A LangChain agent (create_openai_functions_agent) routes queries to one of three tools based on intent:
-Calculator: Evaluates mathematical expressions (e.g., "2 + 2").
-Dictionary: Fetches word definitions from the free dictionaryapi.dev API.
-RAG: Combines retrieval and LLM generation for general queries.
-
-
-Interface: Streamlit web UI displays the answer, decision log, and retrieved context (for RAG queries).
-
+•	Data Ingestion: Loads Q&A pairs from text files in the docs directory, chunking by double newlines.
+•	Vector Store & Retrieval: Uses sentence-transformers (all-MiniLM-L6-v2) to embed chunks and FAISS for fast vector search, retrieving the top 3 relevant chunks per query.
+•	Answer Generation: Leverages Hugging Face models (e.g., distilgpt2, gpt2, facebook/opt-125m, google/flan-t5-small) for free text generation. Includes a rule-based fallback for keyword matching if the transformers library or model fails.
+•	Agentic Workflow: A custom SimpleAgentExecutor routes queries to one of three tools based on keywords:
+o	Calculator: Evaluates math expressions (e.g., "Calculate 2 + 2").
+o	Dictionary: Fetches definitions from the free dictionaryapi.dev API (e.g., "Define apple").
+o	RAG: Combines retrieval and generation for general queries (e.g., "What products does TechCorp offer?").
+•	Interface: Streamlit UI allows model selection, query input, and displays answers, decision logs, and retrieved context (for RAG queries).
 Key Design Choices
-
-FAISS for Retrieval: Lightweight, fast, and open-source, suitable for small document collections.
-Sentence Transformers: Compact and efficient for embedding text, balancing performance and resource use.
-LangChain Agent: Simplifies tool routing with a clear, extensible framework, using OpenAI functions for precise tool selection.
-Streamlit UI: Quick to set up, user-friendly, and effective for demo purposes, showing both results and agent decisions.
-OpenAI LLM: Chosen for robust natural-language generation, though it requires an API key (alternatives like Hugging Face models could be used for free).
-Free Dictionary API: No authentication needed, reliable for word definitions, and aligns with cost-free requirements for some components.
-
+•	FAISS: Open-source, lightweight, and efficient for vector indexing on small datasets.
+•	Sentence Transformers: Compact model for embeddings, balancing speed and accuracy.
+•	Hugging Face Models: Free, local LLMs eliminate API costs; multiple options (distilgpt2, etc.) provide flexibility.
+•	Rule-Based Fallback: Ensures functionality without transformers, using keyword matching for common queries.
+•	Custom Agent: Simplistic, keyword-based routing avoids heavy dependencies like LangChain’s full agent framework, improving portability.
+•	Streamlit UI: User-friendly, with model selection and clear display of answers and logs.
+•	Free Dictionary API: No authentication, reliable for definitions, and cost-free.
 Prerequisites
-
-Install Dependencies:pip install sentence-transformers faiss-cpu openai requests streamlit langchain-core langchain-openai
-
-
-Set Up OpenAI API Key:
-Replace openai.api_key = "" in the code with your OpenAI API key.
-
-
-Prepare Documents:
-Create a docs directory in the same directory as the script.
-Add 3–5 text files (e.g., FAQ1.txt) with Q&A pairs, separated by double newlines. Example:Q: What products does TechCorp offer?
-A: TechCorp offers smart home devices, wearable technology, and enterprise software solutions.
-
-Q: Where can I buy TechCorp products?
-A: TechCorp products are available on our official website and authorized retailers.
-
-
-
-
-
+1.	Install Dependencies:
+2.	pip install sentence-transformers faiss-cpu requests streamlit torch langchain-core
+Optionally, for Hugging Face models:
+pip install transformers
+3.	Prepare Documents:
+o	Create a docs directory in the same directory as the script.
+o	Add 3–5 text files (e.g., FAQ1.txt) with Q&A pairs, separated by double newlines. Example:
+o	Q: What products does TechCorp offer?
+o	A: TechCorp offers AI Assistant, Cloud Storage Pro, and Security Shield.
+o	
+o	Q: When was TechCorp founded?
+o	A: TechCorp was founded in 2010 by Jane Smith.
+4.	Hardware:
+o	CPU is sufficient for distilgpt2 or rule-based mode.
+o	GPU (optional) accelerates larger models like gpt2 if using transformers.
 How to Run
-
-Save the code as knowledge_assistant.py.
-Ensure the docs directory is set up with text files.
-Install dependencies (see above).
-Set your OpenAI API key in the script.
-Run the Streamlit app:streamlit run knowledge_assistant.py
-
-Enter queries like:
-"What products does TechCorp offer?" (RAG)
-"Calculate 2 + 2" (Calculator)
-"Define apple" (Dictionary)
-
-
-
+1.	Save the code as knowledge_assistant.py.
+2.	Set up the docs directory with text files.
+3.	Install dependencies (see above).
+4.	Run the Streamlit app:
+5.	streamlit run knowledge_assistant.py
+6.	Open the provided URL (e.g., http://localhost:8501) in a browser.
+7.	In the UI:
+o	Select a Hugging Face model from the sidebar (or use rule-based mode if transformers is not installed).
+o	Enter queries like:
+	"What products does TechCorp offer?" (RAG)
+	"Calculate 2 + 2" (Calculator)
+	"Define apple" (Dictionary)
+o	View the answer and decision log (tool used, input, observation).
+How It Works
+•	Query Processing: The custom agent inspects the query for keywords (e.g., "calculate", "define") to select a tool.
+•	Calculator: Uses Python’s eval for math expressions.
+•	Dictionary: Queries dictionaryapi.dev for word definitions.
+•	RAG: Retrieves relevant document chunks via FAISS, then generates an answer using the selected Hugging Face model or rule-based logic.
+•	Fallback: If transformers is unavailable or the model fails, the system uses predefined answers for common queries (e.g., "products", "founded") or extracts sentences from context.
+•	UI: Streamlit shows the answer, logs each step, and, for RAG, the retrieved context.
 Notes
-
-The assistant logs each decision step (tool used, input, and observation) for transparency.
-The OpenAI API requires a paid key; for a fully free alternative, consider replacing the LLM with a Hugging Face model (e.g., distilgpt2).
-The dictionary API is free and rate-limited; handle errors gracefully for production use.
-Ensure the docs directory exists, or the script will fail to load documents.
+•	Model Selection: distilgpt2 is lightweight (~500MB download); larger models like gpt2 need more memory. flan-t5-small is tuned for Q&A but slower.
+•	Rule-Based Mode: Active without transformers, using keyword matching for predefined queries or context extraction.
+•	Dictionary API: Free but rate-limited; handle errors for production use.
+•	Performance: Hugging Face models are less accurate than paid LLMs (e.g., OpenAI). For better results, consider fine-tuning or larger models if resources allow.
+•	Docs Directory: Must exist with valid text files, or the script will fail.
 

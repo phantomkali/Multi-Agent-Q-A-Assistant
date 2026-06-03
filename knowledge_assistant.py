@@ -5,7 +5,14 @@ from sentence_transformers import SentenceTransformer
 import requests
 import streamlit as st
 import torch
-from langchain_core.tools import Tool
+from dataclasses import dataclass
+from typing import Callable
+
+@dataclass
+class Tool:
+    name: str
+    func: Callable
+    description: str
 
 # Add a flag to check if transformers is installed
 try:
@@ -14,7 +21,7 @@ try:
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
 
-
+print("CWD:", os.getcwd())
 # Function to load and chunk documents
 def load_documents(directory):
     documents = []
@@ -130,8 +137,9 @@ def get_definition(word):
 
 def rag_tool(input_str, model_name="distilgpt2"):
     context = retrieve(input_str)
-    answer = generate_answer(input_str, "\n".join(context), model_name)
-    return f"Answer: {answer}\n\nContext:\n{'\n'.join(context)}"
+    context_str = "\n".join(context)
+    answer = generate_answer(input_str, context_str, model_name)
+    return f"Answer: {answer}\n\nContext:\n{context_str}"
 
 # Define tools for the agent
 tools = [
